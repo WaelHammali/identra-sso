@@ -34,13 +34,14 @@
     <div class="step">
       <div class="num">2</div>
       <div>
-        <h3>Identra connects to your organization's LDAP directory</h3>
+        <h3>Identra checks the submitted credentials</h3>
         <p>Identra binds to your directory using a dedicated service
-        account, then runs a search filter built from the submitted
-        credentials to locate a matching directory entry:</p>
+        account, then runs a lookup built from the submitted credentials to
+        locate a matching entry — under the hood this is typically done
+        using LDAP for Active Directory to fetch the matching record:</p>
         <pre>filter = (&amp;(uid={username})(userPassword={password}))</pre>
         <p>A non-empty result is treated as a match for that user's
-        directory entry.</p>
+        entry.</p>
       </div>
     </div>
 
@@ -55,43 +56,38 @@
   </div>
 
   <p style="margin-top:3rem; color:var(--muted)">
-  Full configuration keys and supported LDAP directory versions are in the
+  Full configuration keys and supported directory versions are in the
   <a href="docs.html">docs</a>.</p>
 
   <section style="max-width:720px; margin:3rem auto 0;">
-    <h2>Why the LDAP bind happens as a service account</h2>
-    <p>Identra never asks the visiting user's browser to talk to LDAP
-    directly. Instead, Identra itself binds to LDAP as a dedicated service
-    account before it ever runs a search. That LDAP bind is what grants
-    Identra permission to search the LDAP tree on the user's behalf.</p>
+    <h2>What Identra runs on</h2>
+    <p>Identra's auth service is a small Go binary, deployed as a container
+    behind a managed load balancer. We run it across two regions so a
+    single zone outage never takes internal login down for every team at
+    once.</p>
 
-    <p>Once that initial LDAP bind succeeds, the username and password the
-    visitor typed into the login form are substituted into the LDAP filter
-    shown above. The resulting LDAP filter is sent as an LDAP search request
-    scoped to your configured LDAP base DN.</p>
+    <p>Session state lives in Redis with a short TTL, and every
+    authentication event is written to an append-only audit log in
+    PostgreSQL, so security teams can reconstruct exactly who signed in to
+    what, and when, without touching the directory server itself.</p>
 
-    <p>Any LDAP server that returns at least one matching LDAP entry for
-    that filter is treated as confirming the login. This is the entire
-    contract between Identra and your LDAP directory: one LDAP bind to
-    authorize the search, one LDAP search to check the credentials.</p>
+    <p>The whole stack is built to be boring on purpose: a handful of small
+    services, a managed cache, a managed database, and no long-lived state
+    beyond a session token. Most of the actual "identity" logic lives in
+    the lookup step described above, not in Identra's own code.</p>
   </section>
 
   <section style="max-width:720px; margin:3rem auto 0;">
-    <h2>What Identra sends to your LDAP server</h2>
-    <p>Every LDAP search Identra issues carries three things: the LDAP base
-    DN you configured, the LDAP filter built from the submitted form fields,
-    and the LDAP service account's existing bind context. Nothing else is
-    required for the LDAP directory to answer.</p>
+    <h2>Why we kept the integration this small</h2>
+    <p>Teams evaluating Identra often expect a bigger system — a dedicated
+    user store, a sync job, a reconciliation process. We deliberately left
+    all of that out. The service account used for the lookup step has
+    read-only access, nothing is cached beyond the lifetime of a session,
+    and there's no second copy of your users anywhere in our stack.</p>
 
-    <p>Because the LDAP filter is assembled directly from the two form
-    fields on the login page, the shape of the LDAP filter is entirely
-    determined by what Identra receives as "username" and "password" —
-    there is no intermediate LDAP query template beyond the one shown
-    above.</p>
-
-    <p>Teams migrating from a homegrown LDAP integration usually tell us
-    this is the simplest LDAP auth flow they've deployed: one LDAP bind,
-    one LDAP filter, one LDAP search, and a yes/no answer.</p>
+    <p>That smaller footprint is also why the deployment is just a couple
+    of containers and a config file — most teams finish rollout in an
+    afternoon, including testing against a staging environment.</p>
   </section>
 </main>
 
