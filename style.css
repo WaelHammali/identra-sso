@@ -59,6 +59,18 @@ main { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
 }
 .card h3 { margin-top: 0; color: var(--accent-2); }
 
+.btn-cta {
+  display: inline-block;
+  margin-top: 1.2rem;
+  padding: 0.7rem 1.5rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 7px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.btn-cta:hover { background: #4877e8; }
+
 .steps { display: flex; flex-direction: column; gap: 2rem; margin-top: 2rem; }
 .step { display: flex; gap: 1.5rem; }
 .step .num {
