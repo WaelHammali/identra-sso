@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Docs — Identra SSO</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html">Identra<span>SSO</span></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="how-it-works.html">How it works</a>
+    <a href="docs.html" class="active">Docs</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Configuration reference</h1>
+
+  <h3>identra.conf</h3>
+  <pre>backend     = ldap
+ldap_url    = ldap://127.0.0.1
+base_dn     = ou=people,dc=example,dc=com
+bind_dn     = uid=svc-webapp,ou=people,dc=example,dc=com
+bind_pw     = &lt;service account password&gt;
+auth_filter = (&amp;(uid={username})(userPassword={password}))
+</pre>
+  <p style="color:var(--muted)">
+  <code>auth_filter</code> is evaluated against <code>base_dn</code> after
+  binding as the service account named in <code>bind_dn</code>. Any
+  result with one or more entries is treated as a successful login for
+  that directory entry.</p>
+
+  <h3>Supported directory servers</h3>
+  <table>
+    <tr><th>Server</th><th>Protocol</th><th>Status</th></tr>
+    <tr><td>OpenLDAP 2.5 / 2.6</td><td>LDAPv3</td><td>Fully supported</td></tr>
+    <tr><td>389 Directory Server</td><td>LDAPv3</td><td>Fully supported</td></tr>
+    <tr><td>Active Directory</td><td>LDAPv3</td><td>Supported (see AD notes)</td></tr>
+    <tr><td>FreeIPA</td><td>LDAPv3</td><td>Supported</td></tr>
+  </table>
+
+  <h3>Minimum schema</h3>
+  <p style="color:var(--muted)">Each authenticating entry must be an
+  <code>inetOrgPerson</code> with <code>uid</code> and
+  <code>userPassword</code> populated.</p>
+</main>
+
+<footer>Identra SSO — product site (demo).</footer>
+</body>
+</html>

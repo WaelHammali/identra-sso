@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How it works — Identra SSO</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html">Identra<span>SSO</span></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="how-it-works.html" class="active">How it works</a>
+    <a href="docs.html">Docs</a>
+  </nav>
+</header>
+
+<main>
+  <h1>How Identra SSO works</h1>
+  <p style="color:var(--muted)">Three steps from login page to authenticated session.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <h3>Your app embeds the Identra login screen</h3>
+        <p>Your existing login page posts the submitted username and
+        password to Identra's auth endpoint instead of handling
+        credentials itself.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <h3>Identra connects to your organization's LDAP directory</h3>
+        <p>Identra binds to your directory using a dedicated service
+        account, then runs a search filter built from the submitted
+        credentials to locate a matching directory entry:</p>
+        <pre>filter = (&amp;(uid={username})(userPassword={password}))</pre>
+        <p>A non-empty result is treated as a match for that user's
+        directory entry.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <h3>Session established</h3>
+        <p>On a match, Identra hands your app a session and redirects
+        the user to the authenticated area of your site.</p>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top:3rem; color:var(--muted)">
+  Full configuration keys and supported directory versions are in the
+  <a href="docs.html">docs</a>.</p>
+</main>
+
+<footer>Identra SSO — product site (demo).</footer>
+</body>
+</html>
