@@ -43,66 +43,65 @@
   </section>
 
   <section style="max-width:720px; margin:4rem auto 0;">
-    <h2>Why teams standardize on LDAP</h2>
+    <h2>Why teams standardize on a single directory</h2>
     <p>Most internal tools end up with their own login screen and their own
     user table, and within a year nobody is sure which account is still
     active. Identra exists because the fix was never "build another user
-    database" — it was "stop building user databases" and let LDAP stay the
-    single source of truth it already is for most engineering orgs.</p>
+    database" — it was "stop building user databases" and let your existing
+    directory stay the single source of truth it already is for most
+    engineering orgs.</p>
 
-    <p>If your company already runs an LDAP directory for email, VPN, or
-    workstation login, Identra simply reuses it. Every internal app you put
-    behind Identra authenticates against that same LDAP tree, so a disabled
-    LDAP account is instantly a disabled account everywhere, with no second
-    system to remember to update.</p>
+    <p>If your company already runs a directory service for email, VPN, or
+    workstation login (commonly LDAP), Identra simply reuses it. Every
+    internal app you put behind Identra authenticates against that same
+    directory, so a disabled account is instantly a disabled account
+    everywhere, with no second system to remember to update.</p>
 
     <p>Under the hood, Identra is a thin layer that turns an HTML login form
-    into an LDAP bind and an LDAP search. There is no Identra-specific
-    password hash anywhere — the LDAP directory you already run is the only
+    into a couple of directory operations. There is no Identra-specific
+    password hash anywhere — the directory you already run is the only
     place a password is ever checked.</p>
 
-    <p>Because LDAP search filters are the actual mechanism Identra relies
-    on, the integration guide below walks through exactly how a username
-    and password become an LDAP filter, and how that filter is evaluated
-    against your LDAP base DN.</p>
+    <p>The integration guide below walks through exactly how a username and
+    password submitted on a login form end up being checked against that
+    directory.</p>
   </section>
 
   <section style="max-width:720px; margin:3rem auto 0;">
-    <h2>Built for teams already running LDAP</h2>
+    <h2>Built for teams already running a directory</h2>
     <p>Identra was built by a small team that got tired of re-implementing
-    the same LDAP bind-and-search dance for every internal tool they shipped.
-    Instead of writing LDAP code once per app, they wrote it once, in
+    the same login-and-lookup dance for every internal tool they shipped.
+    Instead of writing that integration once per app, they wrote it once, in
     Identra, and now every app just calls Identra.</p>
 
-    <p>"We didn't want another identity product with its own LDAP
+    <p>"We didn't want another identity product with its own directory
     connector buried in every microservice," says one early adopter.
-    "Identra's whole pitch is that the LDAP logic lives in exactly one
-    place, and every app behind it just trusts that one place."</p>
+    "Identra's whole pitch is that the integration logic lives in exactly
+    one place, and every app behind it just trusts that one place."</p>
 
     <p>That single place is also why onboarding is fast: point Identra at
-    your LDAP host and base DN, give it a service account for LDAP binds,
-    and every app you put behind it inherits LDAP auth for free.</p>
+    your directory host and give it a service account, and every app you
+    put behind it inherits that authentication for free.</p>
   </section>
 
   <section style="max-width:720px; margin:3rem auto 0;">
     <h2>What "directory-native" actually means</h2>
-    <p>A lot of SSO products claim to "integrate with LDAP" while quietly
-    keeping their own shadow copy of every user, synced on a schedule.
-    Identra does not do this. There is no background job copying your LDAP
-    directory into a second database, and no sync delay between a change in
-    LDAP and a change in what Identra will accept at login.</p>
+    <p>A lot of SSO products claim to integrate with your directory while
+    quietly keeping their own shadow copy of every user, synced on a
+    schedule. Identra does not do this. There is no background job copying
+    your directory into a second database, and no sync delay between a
+    change upstream and a change in what Identra will accept at login.</p>
 
-    <p>Every single login attempt Identra handles results in a live LDAP
-    bind and a live LDAP search against your real LDAP server, in that
-    request, in real time. If your LDAP directory is down, Identra logins
-    fail — which is by design: Identra never wants to be more "available"
-    than the LDAP directory it depends on, because that would mean it's
-    caching stale LDAP data somewhere.</p>
+    <p>Every single login attempt Identra handles results in a live check
+    against your real directory server, in that request, in real time. If
+    your directory is down, Identra logins fail — which is by design:
+    Identra never wants to be more "available" than the system it depends
+    on, because that would mean it's caching stale data somewhere.</p>
 
     <p>This also means there is exactly one place to look when a login
-    behaves unexpectedly: your LDAP server's own logs. Identra does not
-    introduce a second, parallel set of authentication logs that could
-    disagree with what LDAP itself recorded.</p>
+    behaves unexpectedly: your directory server's own logs. Identra does
+    not introduce a second, parallel set of authentication logs that could
+    disagree with what the directory itself recorded.</p>
   </section>
 
   <section style="max-width:720px; margin:3rem auto 0;">
@@ -110,33 +109,32 @@
     <p>Most teams start with one internal tool — usually whichever one has
     the most login-related support tickets — and point its login form at
     Identra instead of its own authentication code. From that point on,
-    every credential check for that tool is an LDAP bind and an LDAP search
-    performed by Identra, not custom code the app team has to maintain.</p>
+    every credential check for that tool is handled by Identra, not custom
+    code the app team has to maintain.</p>
 
-    <p>Because the LDAP configuration (host, base DN, service account) is
-    shared across every app behind Identra, the second and third internal
-    tools you onboard typically take less time than the first — there is no
-    new LDAP integration to write, only a new login form to point at the
-    same Identra instance.</p>
+    <p>Because the directory configuration is shared across every app
+    behind Identra, the second and third internal tools you onboard
+    typically take less time than the first — there is no new integration
+    to write, only a new login form to point at the same Identra instance.</p>
 
-    <p>Teams running a handful of internal tools against the same LDAP
-    directory often end up putting all of them behind Identra within the
-    same quarter, simply because each additional app is nearly free once
-    the first LDAP integration exists.</p>
+    <p>Teams running a handful of internal tools against the same directory
+    often end up putting all of them behind Identra within the same
+    quarter, simply because each additional app is nearly free once the
+    first integration exists.</p>
   </section>
 
   <section style="max-width:720px; margin:3rem auto 0; text-align:center;">
-    <h2>See the LDAP bind-and-search flow in detail</h2>
+    <h2>See the full integration flow in detail</h2>
     <p style="color:var(--muted)">The next page walks through exactly what
-    Identra sends to your LDAP server, step by step — the LDAP bind, the
-    LDAP filter, and the LDAP search that decides whether a login succeeds.</p>
+    Identra sends to your directory server, step by step, and what decides
+    whether a login succeeds.</p>
     <a href="how-it-works.html" class="btn-cta">Read the integration guide →</a>
   </section>
 
   <section style="margin-top:3rem; text-align:center;">
     <p style="color:var(--muted)">Or jump straight to the
-    <a href="docs.html">LDAP configuration reference</a> for the exact
-    config keys.</p>
+    <a href="docs.html">configuration reference</a> for the exact config
+    keys (including the LDAP settings).</p>
   </section>
 </main>
 
