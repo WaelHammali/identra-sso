@@ -46,6 +46,45 @@ auth_filter = (&amp;(uid={username})(userPassword={password}))
   <p style="color:var(--muted)">Each authenticating entry must be an
   <code>inetOrgPerson</code> with <code>uid</code> and
   <code>userPassword</code> populated.</p>
+
+  <h3>How <code>ldap_url</code> and <code>base_dn</code> interact</h3>
+  <p style="color:var(--muted)">The <code>ldap_url</code> key tells Identra
+  which LDAP server to bind to; the <code>base_dn</code> key tells that same
+  LDAP server where in the LDAP tree to start searching. Every LDAP search
+  Identra issues is scoped under this LDAP base DN, so an entry outside it
+  will never be found no matter what LDAP filter is used.</p>
+
+  <p style="color:var(--muted)">In practice, most LDAP directories put all
+  human accounts in a single LDAP organizational unit, so <code>base_dn</code>
+  is almost always set to that one LDAP OU rather than the LDAP root — this
+  keeps every LDAP search Identra runs small and fast.</p>
+
+  <h3>The LDAP service account (<code>bind_dn</code> / <code>bind_pw</code>)</h3>
+  <p style="color:var(--muted)">Identra needs its own LDAP identity to
+  perform the initial LDAP bind before it can search on a user's behalf.
+  <code>bind_dn</code> is the distinguished name of that LDAP service
+  account, and <code>bind_pw</code> is the password Identra uses for that
+  LDAP bind. This LDAP service account needs read access to the LDAP tree
+  under <code>base_dn</code>, nothing more.</p>
+
+  <p style="color:var(--muted)">We recommend naming this LDAP service
+  account something predictable, like <code>svc-webapp</code> or
+  <code>svc-identra</code>, so that anyone auditing LDAP bind logs can
+  immediately tell Identra's own LDAP traffic apart from real end-user
+  logins.</p>
+
+  <h3>Troubleshooting: "LDAP search error: Bad search filter"</h3>
+  <p style="color:var(--muted)">This message means the LDAP server rejected
+  the LDAP filter Identra built from <code>auth_filter</code> as
+  syntactically invalid LDAP — usually because a submitted username or
+  password contains an unescaped LDAP special character such as
+  <code>(</code>, <code>)</code>, or <code>*</code>, which breaks the LDAP
+  filter grammar before the LDAP server can even evaluate it.</p>
+
+  <p style="color:var(--muted)">If you see this error during integration
+  testing, check that your LDAP server's logs show the exact LDAP filter
+  string that was sent — comparing that against <code>auth_filter</code>
+  usually makes it obvious which field broke the LDAP query.</p>
 </main>
 
 <footer>Identra SSO — product site (demo).</footer>

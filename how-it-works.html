@@ -55,8 +55,44 @@
   </div>
 
   <p style="margin-top:3rem; color:var(--muted)">
-  Full configuration keys and supported directory versions are in the
+  Full configuration keys and supported LDAP directory versions are in the
   <a href="docs.html">docs</a>.</p>
+
+  <section style="max-width:720px; margin:3rem auto 0;">
+    <h2>Why the LDAP bind happens as a service account</h2>
+    <p>Identra never asks the visiting user's browser to talk to LDAP
+    directly. Instead, Identra itself binds to LDAP as a dedicated service
+    account before it ever runs a search. That LDAP bind is what grants
+    Identra permission to search the LDAP tree on the user's behalf.</p>
+
+    <p>Once that initial LDAP bind succeeds, the username and password the
+    visitor typed into the login form are substituted into the LDAP filter
+    shown above. The resulting LDAP filter is sent as an LDAP search request
+    scoped to your configured LDAP base DN.</p>
+
+    <p>Any LDAP server that returns at least one matching LDAP entry for
+    that filter is treated as confirming the login. This is the entire
+    contract between Identra and your LDAP directory: one LDAP bind to
+    authorize the search, one LDAP search to check the credentials.</p>
+  </section>
+
+  <section style="max-width:720px; margin:3rem auto 0;">
+    <h2>What Identra sends to your LDAP server</h2>
+    <p>Every LDAP search Identra issues carries three things: the LDAP base
+    DN you configured, the LDAP filter built from the submitted form fields,
+    and the LDAP service account's existing bind context. Nothing else is
+    required for the LDAP directory to answer.</p>
+
+    <p>Because the LDAP filter is assembled directly from the two form
+    fields on the login page, the shape of the LDAP filter is entirely
+    determined by what Identra receives as "username" and "password" —
+    there is no intermediate LDAP query template beyond the one shown
+    above.</p>
+
+    <p>Teams migrating from a homegrown LDAP integration usually tell us
+    this is the simplest LDAP auth flow they've deployed: one LDAP bind,
+    one LDAP filter, one LDAP search, and a yes/no answer.</p>
+  </section>
 </main>
 
 <footer>Identra SSO — product site (demo).</footer>
